@@ -1,0 +1,11 @@
+---
+# handlers file for jellyfin
+
+- name: Restart Jellyfin
+  uri:
+    url: "{{ jellyfin_api_url }}/System/Restart"
+    method: POST
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  changed_when: true

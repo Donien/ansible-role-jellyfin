@@ -1,0 +1,78 @@
+---
+
+- name: Apply defaults to managed users list
+  set_fact:
+    jellyfin_users_new: "{{ jellyfin_users_new + [jellyfin_default_user | combine(item)] if jellyfin_users_new is defined else [jellyfin_default_user | combine(item)] }}"
+  loop: "{{ jellyfin_users }}"
+
+- name: Set new jellyfin_users fact
+  set_fact:
+    jellyfin_users: "{{ jellyfin_users_new }}"
+
+- name: Get user list
+  uri:
+    url: "{{ jellyfin_api_url }}/Users"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: users
+  changed_when: false
+
+- name: Set facts for comparisons
+  set_fact:
+    existing_users: "{{ users.json }}"
+    users_to_update: "{{ jellyfin_users | selectattr('state', '==', 'present') }}"
+    users_to_create: "{{ jellyfin_users | selectattr('state', '==', 'present') | map(attribute='name') | difference(users.json | map(attribute='Name')) }}"
+    users_to_delete: "{{ jellyfin_users | selectattr('state', '==', 'absent') | map(attribute='name') | intersect(users.json | map(attribute='Name')) }}"
+
+- name: Create user
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/New"
+    method: POST
+    body:
+      Name: "{{ username }}"
+      Password: "{{ password }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  vars:
+    user_dict: "{{ jellyfin_users | selectattr('name', '==', item) | first }}"
+    username: "{{ user_dict.name }}"
+    password: "{{ user_dict.password }}"
+  loop: "{{ users_to_create }}"
+  changed_when: true
+
+- name: Delete user
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/{{ id }}"
+    method: DELETE
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  vars:
+    user_dict: "{{ existing_users | selectattr('Name', '==', item) | first }}"
+    id: "{{ user_dict.Id }}"
+  loop: "{{ users_to_delete }}"
+  changed_when: true
+
+- name: Get fresh user list
+  uri:
+    url: "{{ jellyfin_api_url }}/Users"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: users
+  changed_when: false
+
+- name: Re-set fact for existing users
+  set_fact:
+    existing_users: "{{ users.json }}"
+
+- name: User settings
+  include_tasks: "{{ role_path }}/tasks/configure_user_settings.yml"
+  loop: "{{ users_to_update }}"
+  loop_control:
+    loop_var: "current_user"

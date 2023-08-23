@@ -1,0 +1,36 @@
+---
+
+jellyfin_api_url: "http://{{ ansible_default_ipv4.address }}:{{ jellyfin_http_port }}"
+jellyfin_gpg_key: "https://repo.jellyfin.org/jellyfin_team.gpg.key"
+
+jellyfin_authorization_header: 'MediaBrowser Client="Ansible Role {{ role_name }}", Device="Ansible Role {{ role_name }}", DeviceId="Ansible Role {{ role_name }}", Version="10.8.10"'
+
+jellyfin_network_options:
+  EnableRemoteAccess: "{{ jellyfin_remote_access | bool }}"
+  LocalNetworkSubnets: "{{ jellyfin_local_networks }}"
+  LocalNetworkAddresses: "{{ jellyfin_bind_addresses }}"
+  KnownProxies: "{{ jellyfin_proxies }}"
+
+jellyfin_network_options_numbers: |
+  HttpServerPortNumber: {{ jellyfin_http_port | int }}
+  HttpsPortNumber: {{ jellyfin_https_port | int }}
+
+jellyfin_system_options:
+  UICulture: "{{ jellyfin_ui_culture }}"
+  MetadataCountryCode: "{{ jellyfin_metadata_country_code | upper }}"
+  PreferredMetadataLanguage: "{{ jellyfin_metadata_language | lower }}"
+
+jellyfin_library_options:
+
+
+
+
+
+
+
+
+jellyfin_default_user:
+  state: "present"
+  password: "{{ jellyfin_default_password }}"
+  admin: false
+  hidden: false

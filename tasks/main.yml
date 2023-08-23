@@ -1,0 +1,26 @@
+---
+
+- name: Include OS specific vars
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      files:
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family }}-{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}_family.yml"
+        - "default.yml"
+      paths:
+        - "{{ role_path }}/vars"
+
+- name: Include installation tasks
+  include_tasks: "{{ role_path }}/tasks/install_on_{{ ansible_os_family }}_family.yml"
+
+- name: Ensure Jellyfin is running
+  become: true
+  service:
+    state: started
+    name: "jellyfin"
+
+- name: Include configuration tasks
+  include_tasks: "{{ role_path }}/tasks/configure.yml"

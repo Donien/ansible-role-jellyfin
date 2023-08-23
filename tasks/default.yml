@@ -1,0 +1,5 @@
+---
+
+- name: Information
+  debug:
+    msg: "This role currently does not support '{{ ansible_os_family }} - {{ ansible_distribution }} - {{ ansible_distribution_major_version }}'"

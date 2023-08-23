@@ -1,0 +1,4 @@
+---
+
+jellyfin_apt_keyring: "/etc/apt/keyrings/jellyfin.asc"
+jellyfin_apt_url: "https://repo.jellyfin.org/"

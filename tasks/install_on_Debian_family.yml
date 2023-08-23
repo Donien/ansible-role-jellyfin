@@ -1,0 +1,32 @@
+---
+
+- name: Ensure /etc/apt/keyrings exists
+  file:
+    state: directory
+    path: "/etc/apt/keyrings"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Get Jellyfin GPG Key
+  become: true
+  ansible.builtin.get_url:
+    url: "{{ jellyfin_gpg_key }}"
+    dest: "{{ jellyfin_apt_keyring }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: Add Jellyfin repository
+  become: true
+  apt_repository:
+    state: present
+    filename: "jellyfin"
+    repo: "deb [signed-by={{ jellyfin_apt_keyring }}] {{ jellyfin_apt_url }}{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main"
+    update_cache: true
+
+- name: Install Jellyfin
+  become: true
+  apt:
+    state: present
+    name: "jellyfin"

@@ -1,0 +1,40 @@
+---
+
+- name: Get current network configuration
+  uri:
+    url: "{{ jellyfin_api_url }}/System/Configuration/Network"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: network_config
+  changed_when: false
+
+- name: Set fact for new configuration
+  set_fact:
+    network_config_new: "{{ network_config.json }}"
+
+- name: Set new configuration options (non numbers)
+  when: item.value != omit
+  set_fact:
+    network_config_new: "{{ network_config_new | combine({item.key: item.value}) }}"
+  with_dict: "{{ jellyfin_network_options }}"
+
+- name: Set new configuration options (numbers)
+  when: item.value != omit
+  set_fact:
+    network_config_new: "{{ network_config_new | combine({item.key: item.value}) }}"
+  with_dict: "{{ jellyfin_network_options_numbers | from_yaml }}"
+
+- name: Deploy new configuration
+  when: network_config_new != network_config.json
+  uri:
+    url: "{{ jellyfin_api_url }}/System/Configuration/network"
+    method: POST
+    body: "{{ network_config_new }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  notify: "Restart Jellyfin"
+  changed_when: true

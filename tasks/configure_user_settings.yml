@@ -1,0 +1,67 @@
+---
+
+- name: Set fact for user ID
+  set_fact:
+    user_id: "{{ existing_users | selectattr('Name', '==', current_user.name) | map(attribute='Id') | first }}"
+
+- name: Get user configuration and policy
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/{{ user_id }}"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: "user_config"
+  changed_when: false
+
+- name: Set facts for user configuration and policy
+  set_fact:
+    user_configuration: "{{ user_config.json.Configuration }}"
+    user_configuration_new: "{{ user_config.json.Configuration }}"
+    user_policy: "{{ user_config.json.Policy }}"
+    user_policy_new: "{{ user_config.json.Policy }}"
+
+- name: Change user configuration
+  when: item.value != omit
+  set_fact:
+    user_configuration_new: "{{ user_configuration_new | combine({item.key: item.value}) }}"
+  vars:
+    new_keys:
+      AudioLanguagePreference: "{{ current_user.audio_language if current_user.audio_language is defined else omit }}"
+      SubtitleLanguagePreference: "{{ current_user.subtitle_language if current_user.subtitle_language is defined else omit}}"
+      PlayDefaultAudioTrack: "{{ current_user.play_default_track if current_user.play_default_track is defined else omit }}"
+  loop: "{{ new_keys | dict2items }}"
+
+- name: Set new user configuration
+  when: user_configuration_new != user_configuration
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/{{ user_id }}/Configuration"
+    method: POST
+    body: "{{ user_configuration_new }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  changed_when: true
+
+- name: Change user policy
+  when: item.value != omit
+  set_fact:
+    user_policy_new: "{{ user_policy_new | combine({item.key: item.value}) }}"
+  vars:
+    new_keys:
+      IsAdministrator: "{{ current_user.admin }}"
+      IsHidden: "{{ current_user.hidden }}"
+  loop: "{{ new_keys | dict2items }}"
+
+- name: Set new user policy
+  when: user_policy_new != user_policy
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/{{ user_id }}/Policy"
+    method: POST
+    body: "{{ user_policy_new }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  changed_when: true

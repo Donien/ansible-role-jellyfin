@@ -1,0 +1,74 @@
+---
+
+- name: Check if initial wizard has completed
+  block:
+    - name: Check if initial wizard has completed using given port
+      uri:
+        url: "{{ jellyfin_api_url }}/System/Info/Public"
+        method: GET
+        headers:
+          Accept: "application/json"
+        status_code: 200
+        validate_certs: "{{ not jellyfin_ssl_self_signed | bool }}"
+      register: wizard
+      until: wizard.status != -1
+      retries: 5
+      delay: 3
+
+  rescue:
+    - name: Check if initial wizard has completed using previous / original port of {{ jellyfin_http_port_old }}
+      uri:
+        url: "{{ jellyfin_api_url | replace(jellyfin_http_port, jellyfin_http_port_old) }}/System/Info/Public"
+        method: GET
+        headers:
+          Accept: "application/json"
+        status_code:
+          - 200
+        validate_certs: "{{ not jellyfin_ssl_self_signed | bool }}"
+      register: wizard
+      until: wizard.status != -1
+      retries: 5
+      delay: 3
+
+    - name: Set Jellyfin URL for now
+      set_fact:
+        jellyfin_api_url: "{{ jellyfin_api_url | replace(jellyfin_http_port, jellyfin_http_port_old) }}"
+
+- name: Initial wizard configuration
+  include_tasks: "{{ role_path }}/tasks/configure_wizard.yml"
+  when: not wizard.json.StartupWizardCompleted | bool
+
+- name: Get user's access token
+  no_log: "{{ not jellyfin_debug_logging | bool }}"
+  uri:
+    url: "{{ jellyfin_api_url }}/Users/authenticatebyname"
+    method: POST
+    body:
+      Username: "{{ jellyfin_admin_username }}"
+      Pw: "{{ jellyfin_admin_password }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+      Accept: application/json
+      Content-Type: application/json
+    status_code: 200
+  register: result
+
+- name: Extend authorization header with access token
+  no_log: true
+  set_fact:
+    jellyfin_authorization_header: '{{ jellyfin_authorization_header }}, Token="{{ result.json.AccessToken }}"'
+
+- name: Configure network
+  include_tasks: "{{ role_path }}/tasks/configure_network.yml"
+
+- name: Configure language
+  include_tasks: "{{ role_path }}/tasks/configure_language.yml"
+
+- name: Configure library
+  include_tasks: "{{ role_path }}/tasks/configure_library.yml"
+  when: jellyfin_library is defined
+
+- name: Configure users
+  include_tasks: "{{ role_path }}/tasks/configure_users.yml"
+  when: jellyfin_users is defined

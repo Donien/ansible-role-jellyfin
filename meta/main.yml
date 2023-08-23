@@ -1,0 +1,20 @@
+galaxy_info:
+  role_name: jellyfin
+  description: A role to install Jellyfin and manage certain aspects of it.
+  standalone: true
+
+  author: donien
+
+  license: "GPL-2.0"
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+
+  galaxy_tags:
+    - jellyfin
+
+dependencies: []

@@ -1,0 +1,34 @@
+---
+
+- name: Get current system configuration
+  uri:
+    url: "{{ jellyfin_api_url }}/System/Configuration"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: system_config
+  changed_when: false
+
+- name: Set fact for new configuration
+  set_fact:
+    system_config_new: "{{ system_config.json }}"
+
+- name: Set new configuration options
+  when: item.value != omit
+  set_fact:
+    system_config_new: "{{ system_config_new | combine({item.key: item.value}) }}"
+  with_dict: "{{ jellyfin_system_options }}"
+
+- name: Set language
+  when: system_config_new != system_config.json
+  uri:
+    url: "{{ jellyfin_api_url }}/System/Configuration"
+    method: POST
+    body: "{{ system_config_new }}"
+    body_format: json
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 204
+  notify: "Restart Jellyfin"
+  changed_when: true
