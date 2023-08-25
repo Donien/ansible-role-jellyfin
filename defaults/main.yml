@@ -20,11 +20,8 @@ jellyfin_metadata_country_code: "GB"
 jellyfin_metadata_language: "en"
 
 jellyfin_bind_addresses:
-  - "{{ ansible_default_ipv4.address }}"
 jellyfin_local_networks:
-  - "127.0.0.0/8"
-  - "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.prefix }}"
-jellyfin_proxies: []
+jellyfin_proxies:
 
 jellyfin_ssl_self_signed: false
 
