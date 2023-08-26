@@ -41,7 +41,7 @@
 - name: Get user's access token
   no_log: "{{ not jellyfin_debug_logging | bool }}"
   uri:
-    url: "{{ jellyfin_api_url }}/Users/authenticatebyname"
+    url: "{{ jellyfin_api_url }}/Users/AuthenticateByName"
     method: POST
     body:
       Username: "{{ jellyfin_admin_username }}"

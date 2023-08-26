@@ -58,24 +58,12 @@
   register: result
   changed_when: true
 
-- name: Enable/disable remote access
+- name: Enable/disable remote access and automatic port mapping
   uri:
-    url: "{{ server_url }}/Startup/User"
+    url: "{{ server_url }}/Startup/RemoteAccess"
     method: POST
     body:
       EnableRemoteAccess: "{{ jellyfin_remote_access }}"
-    body_format: json
-    headers:
-      Accept: application/json
-      Content-Type: application/json
-    status_code: 204
-  changed_when: true
-
-- name: Enable/disable automatic port mapping
-  uri:
-    url: "{{ server_url }}/Startup/User"
-    method: POST
-    body:
       EnableAutomaticPortMapping: "{{ jellyfin_automatic_port_mapping }}"
     body_format: json
     headers:

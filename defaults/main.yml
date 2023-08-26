@@ -6,8 +6,9 @@ jellyfin_debug_logging: false
 jellyfin_http_port: "8096"
 jellyfin_http_port_old: "8096"
 jellyfin_https_port: "8920"
-jellyfin_http_url: "http://{{ ansible_fqdn }}:{{ jellyfin_http_port }}"
-jellyfin_https_url: "https://{{ ansible_fqdn }}:{{ jellyfin_https_port }}"
+jellyfin_api_url: "http://localhost:{{ jellyfin_http_port }}"
+jellyfin_enable_ipv6: false
+jellyfin_server_name: "{{ ansible_fqdn }}"
 
 jellyfin_default_password: "Jellyfin"
 jellyfin_admin_username: "Jellyfin"
@@ -24,4 +25,3 @@ jellyfin_local_networks:
 jellyfin_proxies:
 
 jellyfin_ssl_self_signed: false
-

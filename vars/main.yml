@@ -1,11 +1,11 @@
 ---
 
-jellyfin_api_url: "http://localhost:{{ jellyfin_http_port }}"
 jellyfin_gpg_key: "https://repo.jellyfin.org/jellyfin_team.gpg.key"
 
 jellyfin_authorization_header: 'MediaBrowser Client="Ansible Role {{ role_name }}", Device="Ansible Role {{ role_name }}", DeviceId="Ansible Role {{ role_name }}", Version="10.8.10"'
 
 jellyfin_network_options:
+  EnableIPV6: "{{ jellyfin_enable_ipv6 | bool }}"
   EnableRemoteAccess: "{{ jellyfin_remote_access | bool }}"
   LocalNetworkSubnets: "{{ jellyfin_local_networks | ternary(jellyfin_local_networks, jellyfin_local_networks, omit) }}"
   LocalNetworkAddresses: "{{ jellyfin_bind_addresses | ternary(jellyfin_bind_addresses, jellyfin_bind_addresses, omit) }}"

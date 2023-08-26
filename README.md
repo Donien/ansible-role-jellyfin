@@ -29,6 +29,18 @@ None yet.
     - Description: The HTTPS port Jellyfin should listen on.
     - Type: `int/sring`
     - Default: `8920`
+- `jellyfin_api_url`
+    - Descritption: The URL to use a the base for API calls.
+    - Type: `string`
+    - Default: `http://localhost:{{ jellyfin_http_port }}`
+- `jellyfin_enable_ipv6`
+    - Description: Whether to enable IPv6 communication.
+    - Type: `bool`
+    - Default: `false`
+- `jellyfin_server_name`
+    - Description: The name used for identifying this Jellyfin server.
+    - Type: `string`
+    - Default: `{{ ansible_fqdn }}`
 - `jellyfin_admin_username`
     - Description: The username used for API calls against Jellyfin. Will also be created as the first user, if Jellyfin is set up freshly.
     - Type: `string`
@@ -58,13 +70,13 @@ None yet.
     - Type: `string`
     - Default: `GB`
 - `jellyfin_bind_addresses`
-    - Description: The addresses Jellyfin should bind to.
+    - Description: The addresses Jellyfin should bind to. If left empty, Jellyfin will bind to all available addresses.
     - Type: `list`
-    - Default: `[ "{{ ansible_default_ipv4.address }}" ]`
+    - Default: `None`
 - `jellyfin_local_networks`
     - Description: The addresses / networks Jellyfin should consider to be local networks.
     - Type: `list`
-    - Default: `[ 127.0.0.0/8, "{{ ansible_default_ipv4.address}}/{{ ansible_default_ipv4.prefix }}" ]`
+    - Default: `None`
 
 # Example Playbook
 
