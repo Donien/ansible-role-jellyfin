@@ -34,3 +34,4 @@ jellyfin_default_user:
   password: "{{ jellyfin_default_password }}"
   admin: false
   hidden: false
+  libraries_all: false

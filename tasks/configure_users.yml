@@ -71,6 +71,21 @@
   set_fact:
     existing_users: "{{ users.json }}"
 
+- name: Get list of all libraries to compare against
+  uri:
+    url: "{{ jellyfin_api_url }}/Library/VirtualFolders"
+    method: GET
+    headers:
+      X-Emby-Authorization: "{{ jellyfin_authorization_header }}"
+    status_code: 200
+  register: library_folders
+  changed_when: false
+
+- name: Create mapping of library name to library id
+  set_fact:
+    library_map: "{{ library_map | combine({item.Name: item.ItemId}) if library_map is defined else {} | combine({item.Name: item.ItemId}) }}"
+  loop: "{{ library_folders.json }}"
+
 - name: User settings
   include_tasks: "{{ role_path }}/tasks/configure_user_settings.yml"
   loop: "{{ users_to_update }}"

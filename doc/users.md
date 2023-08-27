@@ -36,6 +36,14 @@ Other than the mandatory attributes you can also choose some other attributes:
     - Description: Whether to play the default audio track regardless of language preferences.
     - Type: `bool`
     - Default: `None`
+- `libraries`
+    - Description: The list of libraries this user should have access to explicitly.
+    - Type: `list`
+    - Default: `None`
+- `libraries_all`
+    - Description: Whether this user should have access to all libraries.
+    - Type: `bool`
+    - Default: `false`
 
 > In most cases *no default value* means that the current value for the given setting will be kept.
 
@@ -70,8 +78,13 @@ Other than the mandatory attributes you can also choose some other attributes:
         audio_language: "ger"
         subtitle_language: "ger"
         play_default_track: false
+        libraries:
+            - "horror movies"
+            - "anime"
+
       - name: "testuser2"
         state: "absent"
+        libraries_all: true
 
   roles:
     - jellyfin
